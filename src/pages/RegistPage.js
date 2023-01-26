@@ -1,22 +1,34 @@
-import { Button, Menu, Input, Form, Layout } from 'antd';
-import { UserAddOutlined, UserOutlined} from '@ant-design/icons';
-import { Link, withRouter } from 'react-router-dom';
 import React from 'react';
+import { Button, Menu, Layout, Input ,Form,Select} from 'antd';
+import { UserAddOutlined, UserOutlined, LockOutlined } from '@ant-design/icons';
+import { withRouter } from 'react-router-dom';
 
 const { Header, Content, Footer } = Layout;
+const { Option } = Select;
 
 const footerStyle = {
     textAlign: 'center',
     color: '#fff',
     backgroundColor: '#7dbcea',
 };
-class LoginPage extends React.Component {
+class RegistPage extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-
+            organizations: null,
         }
+
+        fetch("http://localhost/api/getorganizations", {
+            method: "GET",
+            credentials: "include",
+        }).then(r => r.json()).then(resp => {
+            if (resp.code !== 0) alert(resp.msg)
+            else this.setState({
+                organizations: resp.data,
+            })
+        })
     }
+
     render() {
         return <div>
             <Layout>
@@ -26,7 +38,7 @@ class LoginPage extends React.Component {
                         <Menu
                             theme="dark"
                             mode="horizontal"
-                            defaultSelectedKeys={["登录"]}
+                            defaultSelectedKeys={["注册"]}
                             items={[{
                                 key: "登录",
                                 label: "登录",
@@ -50,11 +62,25 @@ class LoginPage extends React.Component {
                             wrapperCol={{ span: 16 }}
                             style={{ maxWidth: 600 }}
                             initialValues={{ remember: true }}
+                            onFinish={values => {
+                                let fd = new FormData()
+                                fd.append("name", values.name)
+                                fd.append("password", values.password)
+                                fd.append("organization", values.organization)
+                                fetch("http://localhost/api/register", {
+                                    method: "POST",
+                                    credentials: "include",
+                                    body: fd,
+                                }).then(r => r.json()).then(resp => {
+                                    if (resp.code !== 0) alert(resp.msg)
+                                    else alert(resp.data.Id)
+                                })
+                            }}
                             autoComplete="off"
                         >
                             <Form.Item
-                                label="UserID"
-                                name="userid"
+                                label="Username"
+                                name="name"
                                 rules={[{ required: true, message: 'Please input your username!' }]}
                             >
                                 <Input />
@@ -67,13 +93,23 @@ class LoginPage extends React.Component {
                             >
                                 <Input.Password />
                             </Form.Item>
+                            <Form.Item name="organization" label="Organization" rules={[{ required: true }]}>
+                                <Select
+                                    placeholder="Please select your organization"
+                                    onChange={()=>{}}
+                                    allowClear
+                                >
+                                    {this.state.organizations === null ?
+                                    null :
+                                    this.state.organizations.map(org => {
+                                        return <Option value={org.Id}>{org.Name}</Option>
+                                    })}
+                                </Select>
+                            </Form.Item>
 
                             <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                                <Button type="primary" style={{ margin: "10px" }} icon={<UserOutlined />} >
-                                    Login
-                                </Button>
-                                <Button style={{ margin: "20px" }} icon={<UserAddOutlined />} onClick={()=>{this.props.history.push("/regist")}}>
-                                    Regist
+                                <Button type="primary" htmlType="submit">
+                                    Submit
                                 </Button>
                             </Form.Item>
                         </Form>
@@ -85,4 +121,6 @@ class LoginPage extends React.Component {
         </div>
     }
 }
-export default withRouter(LoginPage)
+
+export default withRouter(RegistPage)
+
