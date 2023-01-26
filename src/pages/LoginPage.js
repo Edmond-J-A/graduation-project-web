@@ -1,15 +1,11 @@
-import { Button, Menu, Input, Form, Layout } from 'antd';
-import { UserAddOutlined, UserOutlined} from '@ant-design/icons';
-import { Link, withRouter } from 'react-router-dom';
-import React from 'react';
+import { Button, Input, Form, Layout } from 'antd';
+import { UserOutlined } from '@ant-design/icons';
+import { withRouter } from 'react-router-dom';
+import React, { useState } from 'react';
+import { ToServer } from '../server/Server';
 
-const { Header, Content, Footer } = Layout;
+const { Content, Footer } = Layout;
 
-const footerStyle = {
-    textAlign: 'center',
-    color: '#fff',
-    backgroundColor: '#7dbcea',
-};
 class LoginPage extends React.Component {
     constructor(props) {
         super(props)
@@ -17,32 +13,25 @@ class LoginPage extends React.Component {
 
         }
     }
+
+    onFinish(values) {
+        let fd = new FormData()
+        fd.append("id", values.id)
+        fd.append("password", values.password)
+        ToServer("/api/login", "POST", fd).then(resp => {
+            if (resp.code !== 0) alert(resp.msg)
+            else {
+                this.props.onLoginFinished(resp.data)
+                console.log(resp.data)
+                this.props.history.push("/")
+            }
+        })
+    }
+
     render() {
         return <div>
             <Layout>
                 <Layout className="layout">
-                    <Header>
-                        <div className="logo" />
-                        <Menu
-                            theme="dark"
-                            mode="horizontal"
-                            defaultSelectedKeys={["登录"]}
-                            items={[{
-                                key: "登录",
-                                label: "登录",
-                                onClick: () => {
-                                    this.props.history.push("/login")
-                                }
-                            }, {
-                                key: "注册",
-                                label: "注册",
-                                onClick: () => {
-                                    this.props.history.push("/regist")
-                                }
-                            }]
-                            }
-                        />
-                    </Header>
                     <Content style={{ padding: '50px 100px' }}>
                         <Form
                             name="basic"
@@ -50,11 +39,12 @@ class LoginPage extends React.Component {
                             wrapperCol={{ span: 16 }}
                             style={{ maxWidth: 600 }}
                             initialValues={{ remember: true }}
+                            onFinish={v => this.onFinish(v)}
                             autoComplete="off"
                         >
                             <Form.Item
                                 label="UserID"
-                                name="userid"
+                                name="id"
                                 rules={[{ required: true, message: 'Please input your username!' }]}
                             >
                                 <Input />
@@ -69,11 +59,8 @@ class LoginPage extends React.Component {
                             </Form.Item>
 
                             <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                                <Button type="primary" style={{ margin: "10px" }} icon={<UserOutlined />} >
+                                <Button type="primary" htmlType="submit" style={{ margin: "10px" }} icon={<UserOutlined />}>
                                     Login
-                                </Button>
-                                <Button style={{ margin: "20px" }} icon={<UserAddOutlined />} onClick={()=>{this.props.history.push("/regist")}}>
-                                    Regist
                                 </Button>
                             </Form.Item>
                         </Form>

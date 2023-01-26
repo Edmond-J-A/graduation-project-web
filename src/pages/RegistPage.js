@@ -1,16 +1,13 @@
 import React from 'react';
-import { Button, Menu, Layout, Input ,Form,Select} from 'antd';
-import { UserAddOutlined, UserOutlined, LockOutlined } from '@ant-design/icons';
+import { Button,Layout, Input ,Form,Select} from 'antd';
+import { UpCircleOutlined} from '@ant-design/icons';
 import { withRouter } from 'react-router-dom';
 
-const { Header, Content, Footer } = Layout;
+import { ToServer } from '../server/Server';
+
+const { Content, Footer } = Layout;
 const { Option } = Select;
 
-const footerStyle = {
-    textAlign: 'center',
-    color: '#fff',
-    backgroundColor: '#7dbcea',
-};
 class RegistPage extends React.Component {
     constructor(props) {
         super(props)
@@ -18,10 +15,7 @@ class RegistPage extends React.Component {
             organizations: null,
         }
 
-        fetch("http://localhost/api/getorganizations", {
-            method: "GET",
-            credentials: "include",
-        }).then(r => r.json()).then(resp => {
+        ToServer("/api/getorganizations","GET").then(resp => {
             if (resp.code !== 0) alert(resp.msg)
             else this.setState({
                 organizations: resp.data,
@@ -33,28 +27,6 @@ class RegistPage extends React.Component {
         return <div>
             <Layout>
                 <Layout className="layout">
-                    <Header>
-                        <div className="logo" />
-                        <Menu
-                            theme="dark"
-                            mode="horizontal"
-                            defaultSelectedKeys={["注册"]}
-                            items={[{
-                                key: "登录",
-                                label: "登录",
-                                onClick: () => {
-                                    this.props.history.push("/login")
-                                }
-                            }, {
-                                key: "注册",
-                                label: "注册",
-                                onClick: () => {
-                                    this.props.history.push("/regist")
-                                }
-                            }]
-                            }
-                        />
-                    </Header>
                     <Content style={{ padding: '50px 100px' }}>
                         <Form
                             name="basic"
@@ -63,17 +35,18 @@ class RegistPage extends React.Component {
                             style={{ maxWidth: 600 }}
                             initialValues={{ remember: true }}
                             onFinish={values => {
+                                if (values.password.length<6){
+                                    alert("Password length must be greater than or equal to 6.")
+                                    return 
+                                }
                                 let fd = new FormData()
                                 fd.append("name", values.name)
                                 fd.append("password", values.password)
                                 fd.append("organization", values.organization)
-                                fetch("http://localhost/api/register", {
-                                    method: "POST",
-                                    credentials: "include",
-                                    body: fd,
-                                }).then(r => r.json()).then(resp => {
+                                fd.append("role","user")
+                                ToServer("/api/regist","POST",fd).then(resp => {
                                     if (resp.code !== 0) alert(resp.msg)
-                                    else alert(resp.data.Id)
+                                    else alert("You user id is :"+resp.data.Id+",please remember it!")
                                 })
                             }}
                             autoComplete="off"
@@ -94,11 +67,7 @@ class RegistPage extends React.Component {
                                 <Input.Password />
                             </Form.Item>
                             <Form.Item name="organization" label="Organization" rules={[{ required: true }]}>
-                                <Select
-                                    placeholder="Please select your organization"
-                                    onChange={()=>{}}
-                                    allowClear
-                                >
+                                <Select placeholder="Please select your organization" allowClear>
                                     {this.state.organizations === null ?
                                     null :
                                     this.state.organizations.map(org => {
@@ -108,7 +77,7 @@ class RegistPage extends React.Component {
                             </Form.Item>
 
                             <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                                <Button type="primary" htmlType="submit">
+                                <Button type="primary" htmlType="submit" icon ={<UpCircleOutlined />}>
                                     Submit
                                 </Button>
                             </Form.Item>
