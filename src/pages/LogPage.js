@@ -7,11 +7,7 @@ import {ReloadOutlined} from '@ant-design/icons';
 const {Header, Content, Footer} = Layout;
 
 class LogPage extends React.Component {
-    constructor(props) {
-        super(props)
-        this.state = {
-            logs: null,
-        }
+    reSetData=()=>{
         ToServer("/api/getlogs", "GET").then(resp => {
             if (resp.code !== 0) alert(resp.msg)
             else {
@@ -26,6 +22,20 @@ class LogPage extends React.Component {
                 this.setState({logs: resp.data})
             }
         })
+        ToServer("/api/getorganizations", "GET").then(resp => {
+            if (resp.code !== 0) alert(resp.msg)
+            else this.setState({
+                organizations: resp.data,
+            })
+        })
+    }
+    constructor(props) {
+        super(props)
+        this.state = {
+            logs: null,
+            organizations:null,
+        }
+        this.reSetData()
     }
 
     render() {
@@ -50,6 +60,17 @@ class LogPage extends React.Component {
                 title: 'Organization',
                 dataIndex: 'organization',
                 key: 'organization',
+                render: (_, {organization}) => {
+                    if(organization===0){
+                        return <Tag color={"geekblue"}>管理员</Tag>
+                    }
+                    console.log(this.state.organizations[organization])
+                    let org=this.state.organizations.find(item=>item.id==organization)
+                    if(org!==undefined){
+                        return <Tag color={"cyan"}>{org.name}</Tag>
+                    }
+                    return <Tag color={"red"}>Error</Tag>
+                }
             },
             {
                 title: 'Operate',
@@ -60,7 +81,7 @@ class LogPage extends React.Component {
                     if (operate == "申报") {
                         color = 'green'
                     } else {
-                        color = 'geekblue'
+                        color = 'volcano'
                     }
                     return <Tag color={color}>{operate}</Tag>
                 }
@@ -84,22 +105,7 @@ class LogPage extends React.Component {
             <Row>
                 <Col span={21}></Col>
                 <Col span={3}>
-                    <Button type="primary" icon={<ReloadOutlined/>} onClick={() => {
-                        ToServer("/api/getlogs", "GET").then(resp => {
-                            if (resp.code !== 0) alert(resp.msg)
-                            else {
-                                resp.data.map((item, key) => {
-                                    if (item.amount >= 0) {
-                                        resp.data[key].operate = "申报"
-                                    } else {
-                                        resp.data[key].amount = -resp.data[key].amount
-                                        resp.data[key].operate = "请求"
-                                    }
-                                })
-                                this.setState({logs: resp.data})
-                            }
-                        })
-                    }}>刷新</Button></Col>
+                    <Button type="primary" icon={<ReloadOutlined/>} onClick={() => this.reSetData()}>刷新</Button></Col>
             </Row>
             <Divider dashed/>
         </div>
