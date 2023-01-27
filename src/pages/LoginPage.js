@@ -1,10 +1,10 @@
 import { Button, Input, Form, Layout } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
-import { withRouter } from 'react-router-dom';
+import { withRouter,Redirect } from 'react-router-dom';
 import React from 'react';
 
 import { ToServer } from '../server/Server';
-import { dataMake } from '../utils/Utils';
+import { dataMake } from '../utils/FormUtils';
 
 const { Content, Footer } = Layout;
 

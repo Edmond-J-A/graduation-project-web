@@ -1,6 +1,6 @@
 import React from "react"
-import { Link } from "react-router-dom"
-import {  Image ,Layout} from 'antd';
+import { Redirect} from "react-router-dom"
+import { Layout} from 'antd';
 
 const { Header, Content, Footer } = Layout;
 
@@ -13,7 +13,7 @@ class MainPage extends React.Component {
     }
     render() {
         if (!this.props.nowaccount) {
-            return <Link to={"/login"}>Login</Link>
+            return <Redirect to={"/login"}>Login</Redirect>
         }
         return 123
     }
