@@ -1,8 +1,10 @@
 import { Button, Input, Form, Layout } from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { withRouter } from 'react-router-dom';
-import React, { useState } from 'react';
+import React from 'react';
+
 import { ToServer } from '../server/Server';
+import { dataMake } from '../utils/Utils';
 
 const { Content, Footer } = Layout;
 
@@ -10,19 +12,14 @@ class LoginPage extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-
         }
     }
 
     onFinish(values) {
-        let fd = new FormData()
-        fd.append("id", values.id)
-        fd.append("password", values.password)
-        ToServer("/api/login", "POST", fd).then(resp => {
+        ToServer("/api/login", "POST", dataMake(values)).then(resp => {
             if (resp.code !== 0) alert(resp.msg)
             else {
                 this.props.onLoginFinished(resp.data)
-                console.log(resp.data)
                 this.props.history.push("/")
             }
         })

@@ -1,9 +1,10 @@
 import React from 'react';
-import { Button,Layout, Input ,Form,Select} from 'antd';
-import { UpCircleOutlined} from '@ant-design/icons';
+import { Button, Layout, Input, Form, Select } from 'antd';
+import { UpCircleOutlined } from '@ant-design/icons';
 import { withRouter } from 'react-router-dom';
 
 import { ToServer } from '../server/Server';
+import { dataMake } from '../utils/Utils';
 
 const { Content, Footer } = Layout;
 const { Option } = Select;
@@ -15,7 +16,7 @@ class RegistPage extends React.Component {
             organizations: null,
         }
 
-        ToServer("/api/getorganizations","GET").then(resp => {
+        ToServer("/api/getorganizations", "GET").then(resp => {
             if (resp.code !== 0) alert(resp.msg)
             else this.setState({
                 organizations: resp.data,
@@ -35,18 +36,13 @@ class RegistPage extends React.Component {
                             style={{ maxWidth: 600 }}
                             initialValues={{ remember: true }}
                             onFinish={values => {
-                                if (values.password.length<6){
+                                if (values.password.length < 6) {
                                     alert("Password length must be greater than or equal to 6.")
-                                    return 
+                                    return
                                 }
-                                let fd = new FormData()
-                                fd.append("name", values.name)
-                                fd.append("password", values.password)
-                                fd.append("organization", values.organization)
-                                fd.append("role","user")
-                                ToServer("/api/regist","POST",fd).then(resp => {
+                                ToServer("/api/regist", "POST", dataMake(values)).then(resp => {
                                     if (resp.code !== 0) alert(resp.msg)
-                                    else alert("You user id is :"+resp.data.Id+",please remember it!")
+                                    else alert("You user id is :" + resp.data.Id + ",please remember it!")
                                 })
                             }}
                             autoComplete="off"
@@ -69,15 +65,15 @@ class RegistPage extends React.Component {
                             <Form.Item name="organization" label="Organization" rules={[{ required: true }]}>
                                 <Select placeholder="Please select your organization" allowClear>
                                     {this.state.organizations === null ?
-                                    null :
-                                    this.state.organizations.map(org => {
-                                        return <Option value={org.Id}>{org.Name}</Option>
-                                    })}
+                                        null :
+                                        this.state.organizations.map(org => {
+                                            return <Option value={org.Id}>{org.Name}</Option>
+                                        })}
                                 </Select>
                             </Form.Item>
 
                             <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
-                                <Button type="primary" htmlType="submit" icon ={<UpCircleOutlined />}>
+                                <Button type="primary" htmlType="submit" icon={<UpCircleOutlined />}>
                                     Submit
                                 </Button>
                             </Form.Item>
