@@ -1,4 +1,4 @@
-import { Button, Input, Form, Layout } from 'antd';
+import { Button, Input, Form, Layout ,message} from 'antd';
 import { UserOutlined } from '@ant-design/icons';
 import { withRouter,Redirect } from 'react-router-dom';
 import React from 'react';
@@ -17,8 +17,13 @@ class LoginPage extends React.Component {
 
     onFinish(values) {
         ToServer("/api/login", "POST", dataMake(values)).then(resp => {
-            if (resp.code !== 0) alert(resp.msg)
+            if (resp.code !== 0){
+                message.open({ type: 'error',
+                    content: resp.msg})
+            }
             else {
+                message.open({ type: 'success',
+                    content: 'Success.'})
                 this.props.onLoginFinished(resp.data)
                 this.props.history.push("/")
             }

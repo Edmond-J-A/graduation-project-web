@@ -1,6 +1,6 @@
 import React from "react"
-import {withRouter} from "react-router-dom"
-import {Space,Divider, Button, Table, Tag, Layout, Row, Col} from 'antd';
+import {Redirect, withRouter} from "react-router-dom"
+import {Space, Divider, Button, Table, Tag, Layout, Row, Col, message} from 'antd';
 import {ToServer} from "../server/Server";
 import {ReloadOutlined} from '@ant-design/icons';
 
@@ -9,7 +9,7 @@ const {Header, Content, Footer} = Layout;
 class LogPage extends React.Component {
     reSetData=()=>{
         ToServer("/api/getlogs", "GET").then(resp => {
-            if (resp.code !== 0) alert(resp.msg)
+            if (resp.code !== 0) message.info(resp.msg)
             else {
                 resp.data.map((item, key) => {
                     if (item.amount >= 0) {
@@ -23,7 +23,7 @@ class LogPage extends React.Component {
             }
         })
         ToServer("/api/getorganizations", "GET").then(resp => {
-            if (resp.code !== 0) alert(resp.msg)
+            if (resp.code !== 0) message.info(resp.msg)
             else this.setState({
                 organizations: resp.data,
             })
@@ -39,6 +39,9 @@ class LogPage extends React.Component {
     }
 
     render() {
+        if (!this.props.nowaccount) {
+            return <Redirect to={"/login"}>Login</Redirect>
+        }
         const columns = [
             {
                 title: 'Id',
@@ -64,8 +67,7 @@ class LogPage extends React.Component {
                     if(organization===0){
                         return <Tag color={"geekblue"}>管理员</Tag>
                     }
-                    console.log(this.state.organizations[organization])
-                    let org=this.state.organizations.find(item=>item.id==organization)
+                    let org=this.state.organizations?.find(item=>item.id===organization)
                     if(org!==undefined){
                         return <Tag color={"cyan"}>{org.name}</Tag>
                     }
@@ -78,7 +80,7 @@ class LogPage extends React.Component {
                 key: 'operate',
                 render: (_, {operate}) => {
                     let color
-                    if (operate == "申报") {
+                    if (operate === "申报") {
                         color = 'green'
                     } else {
                         color = 'volcano'

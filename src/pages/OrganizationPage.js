@@ -1,10 +1,10 @@
 import React from "react"
-import { Redirect} from "react-router-dom"
+import { Redirect,withRouter} from "react-router-dom"
 import {Layout, message} from 'antd';
 
 const { Header, Content, Footer } = Layout;
 
-class MainPage extends React.Component {
+class OrganizationPage extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
@@ -15,7 +15,7 @@ class MainPage extends React.Component {
         if (!this.props.nowaccount) {
             return <Redirect to={"/login"}/>
         }
-        return 123
+        return <div>组织</div>
     }
 }
-export default MainPage
+export default withRouter(OrganizationPage)
