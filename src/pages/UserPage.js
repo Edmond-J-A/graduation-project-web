@@ -65,7 +65,7 @@ class UserPage extends React.Component {
                                changeP = e.target.value
                            }}/>
                     <Button type="primary" onClick={() => {
-                        if(changeP==="" ||changeP===undefined){
+                        if(changeP==="" ||changeP===undefined||changeP.length<6){
                             message.error("Illegal new password.")
                             return
                         }

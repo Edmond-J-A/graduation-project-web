@@ -42,7 +42,7 @@ class RegistPage extends React.Component {
                                 }
                                 ToServer("/api/regist", "POST", dataMake(values)).then(resp => {
                                     if (resp.code !== 0) alert(resp.msg)
-                                    else alert("You user id is :" + resp.data.Id + ",please remember it!")
+                                    else alert("You user id is :" + resp.data.id + ",please remember it!")
                                 })
                             }}
                             autoComplete="off"
@@ -63,11 +63,11 @@ class RegistPage extends React.Component {
                                 <Input.Password />
                             </Form.Item>
                             <Form.Item name="organization" label="Organization" rules={[{ required: true }]}>
-                                <Select placeholder="Please select your organization" allowClear>
+                                <Select placeholder="Please select your organization" >
                                     {this.state.organizations === null ?
                                         null :
                                         this.state.organizations.map(org => {
-                                            return <Option value={org.Id}>{org.Name}</Option>
+                                            return <Option value={org.id}>{org.name}</Option>
                                         })}
                                 </Select>
                             </Form.Item>
