@@ -20,6 +20,7 @@ import LogPage from "./pages/LogPage";
 import {ToServer} from "./server/Server";
 import OrganizationPage from "./pages/OrganizationPage";
 import PredictPage from "./pages/PredictPage";
+import App from "./pages/NotFoundPage";
 
 const {Header, Content, Footer, Sider} = Layout;
 
@@ -151,6 +152,7 @@ class Web extends React.Component {
                             <Route exact path="/log" render={() => <LogPage nowaccount={this.state.account}/>}/>
                             <Route exact path="/organization" render={() => <OrganizationPage nowaccount={this.state.account}/>}/>
                             <Route exact path="/predict" render={() => <PredictPage nowaccount={this.state.account}/>}/>
+                            <Route exact path="/nofound" render={() => <App nowaccount={this.state.account}/>}/>
                         </Switch>
                     </Content>
                 </Layout>
