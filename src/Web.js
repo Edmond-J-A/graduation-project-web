@@ -93,7 +93,7 @@ class Web extends React.Component {
         } else {
             let items = [getItem('主页', '1', <AppstoreOutlined/>, () => this.props.history.push("/")),
                 getItem('物资管理', '2', <ContainerOutlined/>, () => this.props.history.push("/resource")),
-                getItem('智能调度', '3', <PieChartOutlined/>,() => this.props.history.push("/predict"))]
+                getItem('智能预测', '3', <PieChartOutlined/>,() => this.props.history.push("/predict"))]
             if (this.state.account.admin) {
                 items.push(getItem('组织管理', '5', <TeamOutlined/>,() => this.props.history.push("/organization")))
                 items.push(getItem('上传记录查看', '6', <MailOutlined/>,() => this.props.history.push("/log")))

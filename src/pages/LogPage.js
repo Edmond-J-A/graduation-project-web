@@ -123,39 +123,57 @@ class LogPage extends React.Component {
                 title: 'Action',
                 dataIndex: 'action',
                 key: 'action',
-                render: (_, {emergence}) => {
+                render: (_, {emergence, id}) => {
                     if (emergence === 1) {
-                        return <Button type="link">取消紧急</Button>
+                        return <Button onClick={(record) => {
+                            console.log(record)
+                            let state=0
+                            if(emergence===0){
+                                state=1
+                            }
+                            ToServer("/api/changeemergence","POST",dataMake({id:id,state:state})).then(resp=>{
+                                if(resp.code!==0) message.error(resp.msg)
+                                else {
+                                    message.success("Success.")
+                                    let lgs=this.state.logs
+
+                                    for(var i in lgs){
+                                        if(lgs[i].id===id){
+                                            lgs[i].emergence=state
+                                        }
+                                    }
+                                    this.setState({logs:lgs})
+                                    console.log(this.state.logs)
+                                }
+                            })
+                        }} type="link">取消紧急</Button>
                     }
-                    return <Button type="link">设置紧急</Button>
+                    return <Button onClick={(record) => {
+                        console.log(record)
+                        let state=0
+                        if(emergence===0){
+                            state=1
+                        }
+                        ToServer("/api/changeemergence","POST",dataMake({id:id,state:state})).then(resp=>{
+                            if(resp.code!==0) message.error(resp.msg)
+                            else {
+                                message.success("Success.")
+                                let lgs=this.state.logs
+                                console.log(this.state.logs)
+                                for(var i in lgs){
+                                    if(lgs[i].id===id){
+                                        lgs[i].emergence=state
+                                    }
+                                }
+                                this.setState({logs:lgs})
+                                console.log(this.state.logs)
+                            }
+                        })
+                    }}  type="link">设置紧急</Button>
                 },
             },
         ];
-        return <div><Table onRow={(record) => {
-            return {
-                onClick: (event) => {
-                    console.log(record)
-                    let state=0
-                    if(record.emergence===0){
-                        state=1
-                    }
-                    ToServer("/api/changeemergence","POST",dataMake({id:record.id,state:state})).then(resp=>{
-                        if(resp.code!==0) message.error(resp.msg)
-                        else {
-                            message.success("Success.")
-                            let lgs=this.state.logs
-                            for(var i in lgs){
-                                if(lgs[i].id===record.id){
-                                    lgs[i].emergence=state
-                                }
-                            }
-                            this.setState({logs:lgs})
-
-                        }
-                    })
-                },
-            }
-        }} columns={columns} dataSource={this.state.logs} pagination={{defaultPageSize: 20}}/>
+        return <div><Table columns={columns} dataSource={this.state.logs} pagination={{defaultPageSize: 20}}/>
             <Row>
                 <Col span={21}></Col>
                 <Col span={3}>
