@@ -1,8 +1,16 @@
 import React from "react"
-import {Redirect, withRouter} from "react-router-dom"
-import {Input, message, Row, Col, Button, Avatar} from "antd";
-import {ToServer} from "../server/Server";
-import {dataMake} from "../utils/FormUtils";
+import { Redirect, withRouter } from "react-router-dom"
+import { message, Button, Avatar, Space } from "antd";
+import {
+    ProCard,
+    ProForm,
+    ProFormSelect,
+    ProFormText,
+
+} from '@ant-design/pro-components';
+
+import { dataMake } from "../utils/FormUtils";
+import { ToServer } from "../server/Server";
 
 class UserPage extends React.Component {
     constructor(props) {
@@ -10,88 +18,78 @@ class UserPage extends React.Component {
     }
 
     render() {
-        let changeN, changeP;
         if (!this.props.nowaccount) {
             return <Redirect to={"/login"}>Login</Redirect>
         }
+        var role
+        if (this.props.nowaccount.role === "user") {
+            role = "用户"
+        } else if (this.props.nowaccount.role === "admin") {
+            role = "管理员"
+        } else {
+            role = "运输"
+        }
         return <div>
-            <Row style={{marginTop: '30px'}}>
-                <Col span={10} style={{textAlign: "center", color: "blue"}}/>
-                <Col span={4}>
-                    <Avatar size={128} style={{
-                        color: '#ffffff',
-                        backgroundColor: "#1677ff",
-                        margin: "10px"
-                    }}><font size={10}>{this.props.nowaccount.name}</font></Avatar>
-                </Col>
-                <Col span={10} style={{textAlign: "center", color: "blue"}}/>
-            </Row>
-            <Row style={{marginTop: '30px', textAlign: "center"}}>
-                <Input.Group compact>
-                    <Input addonBefore={<font size={3}>UserID:</font>} style={{width: 'calc(100% - 300px)'}}
-                           defaultValue={this.props.nowaccount.id} disabled={1}/>
-                </Input.Group>
-            </Row>
-            <Row style={{marginTop: '30px', textAlign: "center"}}>
-                <Input.Group compact>
-                    <Input allowClear addonBefore={<font size={3}>UserName:</font>} style={{width: 'calc(100% - 300px)'}}
-                           placeholder={this.props.nowaccount.name}
-                           onChange={e => changeN = e.target.value}
-                           />
-                    <Button type="primary" onClick={() => {
-                        if(changeN==="" || (changeN==="root" && this.props.nowaccount.role!=="admin")||changeN===undefined||changeN.length>12){
-                            message.error("Illegal new name.")
-                            return
-                        }
-                        ToServer("/api/changename", "POST", dataMake({"newname": changeN})).then(resp => {
-                                if (resp.code !== 0) message.error(toString(resp.msg))
-                                else {
-                                    message.success("Success.")
-                                    this.props.nowaccount.name = changeN
-                                    this.props.onChangeThing(this.props.nowaccount)
-
-                                }
+            <ProCard style={{ margin: "20px 20px" }}>
+                <ProForm style={{ margin: "20px 20px" }}
+                    labelWidth="auto"
+                    onFinish={(values) => {
+                        ToServer("/api/changedetail", "POST", dataMake(values)).then(resp => {
+                            if (resp.code !== 0) message.error(resp.msg)
+                            else {
+                                this.props.nowaccount.name=values.newname
+                                this.props.nowaccount.address=values.address
                             }
-                        )
-                    }
-                    }>Save</Button>
-                </Input.Group>
-            </Row>
-            <Row style={{marginTop: '30px', textAlign: "center"}}>
-                <Input.Group compact>
-                    <Input allowClear addonBefore={<font size={3}>Password:</font>} style={{width: 'calc(100% - 300px)'}}
-                           placeholder="*******"
-                           onChange={e => {
-                               changeP = e.target.value
-                           }}/>
-                    <Button type="primary" onClick={() => {
-                        if(changeP==="" ||changeP===undefined||changeP.length<6){
-                            message.error("Illegal new password.")
-                            return
-                        }
-                        ToServer("/api/changepassword", "POST", dataMake({"newpassword": changeP})).then(resp => {
-                                if (resp.code !== 0) message.error(resp.msg)
-                                else message.success("Success.")
-                                this.props.onChangeThing(this.props.nowaccount)
-                            }
-                        )
-                    }
-                    }>Save</Button>
-                </Input.Group>
-            </Row>
-            <Row style={{marginTop: '30px', textAlign: "center"}}>
-                <Input.Group compact>
-                    <Input addonBefore={<font size={3}>Organization:</font>} style={{width: 'calc(100% - 300px)'}}
-                           defaultValue={this.props.nowaccount.organizationname.name} disabled={1}/>
-                </Input.Group>
-            </Row>
-            <Row style={{marginTop: '30px', textAlign: "center"}}>
-                <Input.Group compact>
-                    <Input addonBefore={<font size={3}>Role:</font>} style={{width: 'calc(100% - 300px)'}}
-                           defaultValue={this.props.nowaccount.role} disabled={1}/>
-                </Input.Group>
-            </Row>
+                        })
+                        message.success('提交成功');
+                    }}
+                    initialValues={{
+                        newname: this.props.nowaccount?.name,
+                    }}
+                >
+                    <ProForm.Group>
+                        <ProFormText
+                            width="md"
+                            name="newname"
+                            label="用户名"
+                            tooltip="最长为 24 位"
+                            placeholder="请输入名称"
+                            rules={[
+                                {
+                                    required: true,
+                                    message: '请输入用户名!',
+                                },
+                            ]}
+                        />
+                        <ProFormText width="md" name="organizationname" label="组织名称" disabled initialValue={this.props.nowaccount.organizationname} />
+                        <Space></Space>
+                        <Avatar style={{
+                                    color: '#f56a00',
+                                    backgroundColor: '#fde3cf',
+                                }}
+                                size={{ xs: 24, sm: 32, md: 40, lg: 64, xl: 80, xxl: 100 }}
+                                src="https://gw.alipayobjects.com/zos/rmsportal/BiazfanxmamNRoxxVxka.png"/>
+                    </ProForm.Group>
+                    <ProForm.Group>
+                        <ProFormSelect
+                            readonly
+                            width="xs"
+                            name="state"
+                            label="用户状态"
+                            initialValue="正常"
+                        />
+                    </ProForm.Group>
+                    <ProFormText width="sm" name="password" label="密码" placeholder={"******"} />
+                    <ProFormText
+                        name="address"
+                        width="md"
+                        label="组织地址"
+                        initialValue={this.props.nowaccount.address}
+                    />
+                    <ProFormText width="xs" name="role" disabled label="权限" initialValue={role} />
+                </ProForm>
 
+            </ProCard>
         </div>
     }
 }

@@ -1,85 +1,186 @@
-import React from "react";
-import {withRouter} from "react-router-dom";
-import {Table} from "antd";
+import { Table, Input, InputNumber, Popconfirm, Form } from 'antd';
+import React from "react"
+import { Redirect,withRouter} from "react-router-dom"
+const data = [];
+for (let i = 0; i < 100; i++) {
+  data.push({
+    key: i.toString(),
+    name: `Edrward ${i}`,
+    age: 32,
+    address: `London Park no. ${i}`,
+  });
+}
+const EditableContext = React.createContext();
 
+class EditableCell extends React.Component {
+  getInput = () => {
+    if (this.props.inputType === 'number') {
+      return <InputNumber />;
+    }
+    return <Input />;
+  };
 
-const columns = [
-    {
-        title: 'Name',
+  renderCell = ({ getFieldDecorator }) => {
+    const {
+      editing,
+      dataIndex,
+      title,
+      inputType,
+      record,
+      index,
+      children,
+      ...restProps
+    } = this.props;
+    return (
+      <td {...restProps}>
+        {editing ? (
+          <Form.Item style={{ margin: 0 }}>
+            {getFieldDecorator(dataIndex, {
+              rules: [
+                {
+                  required: true,
+                  message: `Please Input ${title}!`,
+                },
+              ],
+              initialValue: record[dataIndex],
+            })(this.getInput())}
+          </Form.Item>
+        ) : (
+          children
+        )}
+      </td>
+    );
+  };
+
+  render() {
+    return <EditableContext.Consumer>{this.renderCell}</EditableContext.Consumer>;
+  }
+}
+
+class EditableTable extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { data, editingKey: '' };
+    this.columns = [
+      {
+        title: 'name',
         dataIndex: 'name',
-        render: (text) => <a>{text}</a>,
-    },
-    {
-        title: 'Age',
+        width: '25%',
+        editable: true,
+      },
+      {
+        title: 'age',
         dataIndex: 'age',
-    },
-    {
-        title: 'Address',
+        width: '15%',
+        editable: true,
+      },
+      {
+        title: 'address',
         dataIndex: 'address',
-    },
-];
-const data = [
-    {
-        key: '1',
-        name: 'John Brown',
-        age: 32,
-        address: 'New York No. 1 Lake Park',
-    },
-    {
-        key: '2',
-        name: 'Jim Green',
-        age: 42,
-        address: 'London No. 1 Lake Park',
-    },
-    {
-        key: '3',
-        name: 'Joe Black',
-        age: 32,
-        address: 'Sidney No. 1 Lake Park',
-    },
-    {
-        key: '4',
-        name: 'Disabled User',
-        age: 99,
-        address: 'Sidney No. 1 Lake Park',
-    },
-];
+        width: '40%',
+        editable: true,
+      },
+      {
+        title: 'operation',
+        dataIndex: 'operation',
+        render: (text, record) => {
+          const { editingKey } = this.state;
+          const editable = this.isEditing(record);
+          return editable ? (
+            <span>
+              <EditableContext.Consumer>
+                {form => (
+                  <a
+                    onClick={() => this.save(form, record.key)}
+                    style={{ marginRight: 8 }}
+                  >
+                    Save
+                  </a>
+                )}
+              </EditableContext.Consumer>
+              <Popconfirm title="Sure to cancel?" onConfirm={() => this.cancel(record.key)}>
+                <a>Cancel</a>
+              </Popconfirm>
+            </span>
+          ) : (
+            <a disabled={editingKey !== ''} onClick={() => this.edit(record.key)}>
+              Edit
+            </a>
+          );
+        },
+      },
+    ];
+  }
 
-// rowSelection object indicates the need for row selection
-const rowSelection = {
-    onChange: (selectedRowKeys, selectedRows) => {
-        console.log(`selectedRowKeys: ${selectedRowKeys}`, 'selectedRows: ', selectedRows);
-    },
-    getCheckboxProps: (record) => ({
+  isEditing = record => record.key === this.state.editingKey;
 
-        name: record.name,
-    }),
-};
-class App extends React.Component{
-    //const [selectionType, setSelectionType] = useState('checkbox');
-    constructor(props) {
-        super(props);
+  cancel = () => {
+    this.setState({ editingKey: '' });
+  };
 
-    }
-    render() {    return (
-        <div>
-            <Table
-                rowSelection={{
-                    type: "checkbox",
-                    ...rowSelection,
-                }}
-                columns={columns}
-                dataSource={data}
-                onRow={(record) => {
-                    return {
-                        onClick: (event) => {console.log(record)}, // 点击行
-                    };
-                }}
-            />
+  save(form, key) {
+    form.validateFields((error, row) => {
+      if (error) {
+        return;
+      }
+      const newData = [...this.state.data];
+      const index = newData.findIndex(item => key === item.key);
+      if (index > -1) {
+        const item = newData[index];
+        newData.splice(index, 1, {
+          ...item,
+          ...row,
+        });
+        this.setState({ data: newData, editingKey: '' });
+      } else {
+        newData.push(row);
+        this.setState({ data: newData, editingKey: '' });
+      }
+    });
+  }
 
+  edit(key) {
+    this.setState({ editingKey: key });
+  }
 
-        </div>
-    )
-    }
-};
-export default withRouter(App);
+  render() {
+    const components = {
+      body: {
+        cell: EditableCell,
+      },
+    };
+
+    const columns = this.columns.map(col => {
+      if (!col.editable) {
+        return col;
+      }
+      return {
+        ...col,
+        onCell: record => ({
+          record,
+          inputType: col.dataIndex === 'age' ? 'number' : 'text',
+          dataIndex: col.dataIndex,
+          title: col.title,
+          editing: this.isEditing(record),
+        }),
+      };
+    });
+
+    return (
+      <EditableContext.Provider value={this.props.form}>
+        <Table
+          components={components}
+          bordered
+          dataSource={this.state.data}
+          columns={columns}
+          rowClassName="editable-row"
+          pagination={{
+            onChange: this.cancel,
+          }}
+        />
+      </EditableContext.Provider>
+    );
+  }
+}
+
+export default withRouter(EditableTable)

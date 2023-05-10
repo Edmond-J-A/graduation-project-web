@@ -1,5 +1,5 @@
 import React from 'react';
-import { Button, Layout, Input, Form, Select } from 'antd';
+import { Button, Layout, Input, Form, Select,message } from 'antd';
 import { UpCircleOutlined } from '@ant-design/icons';
 import { withRouter } from 'react-router-dom';
 
@@ -13,15 +13,7 @@ class RegistPage extends React.Component {
     constructor(props) {
         super(props)
         this.state = {
-            organizations: null,
         }
-
-        ToServer("/api/getorganizations", "GET").then(resp => {
-            if (resp.code !== 0) alert(resp.msg)
-            else this.setState({
-                organizations: resp.data,
-            })
-        })
     }
 
     render() {
@@ -40,9 +32,9 @@ class RegistPage extends React.Component {
                                     alert("Password length must be greater than or equal to 6.")
                                     return
                                 }
-                                ToServer("/api/regist", "POST", dataMake(values)).then(resp => {
-                                    if (resp.code !== 0) alert(resp.msg)
-                                    else alert("You user id is :" + resp.data.id + ",please remember it!")
+                                ToServer("/api/register", "POST", dataMake(values)).then(resp => {
+                                    if (resp.code !== 0) message.error(resp.msg)
+                                    else message.success(resp.msg)
                                 })
                             }}
                             autoComplete="off"
@@ -62,16 +54,21 @@ class RegistPage extends React.Component {
                             >
                                 <Input.Password />
                             </Form.Item>
-                            <Form.Item name="organization" label="Organization" rules={[{ required: true }]}>
-                                <Select placeholder="Please select your organization" >
-                                    {this.state.organizations === null ?
-                                        null :
-                                        this.state.organizations.map(org => {
-                                            return <Option value={org.id}>{org.name}</Option>
-                                        })}
-                                </Select>
+                            <Form.Item
+                                label="Organization"
+                                name="organization"
+                                rules={[{ required: true, message: 'Please input your organization!' }]}
+                            >
+                                <Input />
                             </Form.Item>
-
+                            <Form.Item
+                                label="Role"
+                                name="role"
+                                rules={[{ required: true, message: 'Please choose your role!' }]}
+                            >
+                                <Select options={[{value: 'deliver',label: '运输'},
+                                                  {value: 'user',label: '用户'}]}/>
+                            </Form.Item>
                             <Form.Item wrapperCol={{ offset: 8, span: 16 }}>
                                 <Button type="primary" htmlType="submit" icon={<UpCircleOutlined />}>
                                     Submit
